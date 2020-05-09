@@ -1,7 +1,10 @@
-package com.course_project.arbitrage_analyzer.model;
+package com.course_project.arbitrage_analyzer.model.order_book_getters;
 
 import com.course_project.arbitrage_analyzer.Log;
 import com.course_project.arbitrage_analyzer.api.MarketApi;
+import com.course_project.arbitrage_analyzer.model.CompiledOrderBook;
+import com.course_project.arbitrage_analyzer.model.PriceAmountPair;
+import com.course_project.arbitrage_analyzer.model.SettingsContainer;
 import com.course_project.arbitrage_analyzer.network.bitfinex.BitfinexResponse;
 import com.course_project.arbitrage_analyzer.network.cex.CexResponse;
 import com.course_project.arbitrage_analyzer.network.exmo.ExmoResponse;
@@ -16,13 +19,13 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 //Gets data from markets and compiles it into the CompiledOrderBook.
-public class OrderBookGetter {
+public abstract class OrderBookGetter {
 
     private static final String LOGTAG = "OrderBookGetter";
 
     private MarketApi api;
     private Retrofit retrofit;
-    private OrderBookGetterProgressListener progressListener;
+    protected OrderBookGetterProgressListener progressListener;
 
 
     public OrderBookGetter(OrderBookGetterProgressListener pl) {
@@ -63,7 +66,7 @@ public class OrderBookGetter {
         return bitfinexResponse;
     }
     //Convert Bitfinex responce into CompiledOrderBook.
-    private CompiledOrderBook getBitfinexCleanOrderBook(int limit, String currencyPair) {
+    protected CompiledOrderBook getBitfinexCleanOrderBook(int limit, String currencyPair) {
 
         BitfinexResponse response = getBitfinexResponse(limit, currencyPair);
 
@@ -137,7 +140,7 @@ public class OrderBookGetter {
         return cexResponse;
     }
     //Convert Cex response into CompiledOrderBook.
-    private CompiledOrderBook getCexPartCleanOrderBook(int limit, String currencyPair) {
+    protected CompiledOrderBook getCexPartCleanOrderBook(int limit, String currencyPair) {
 
         CexResponse response = getCexPartResponse(limit, currencyPair);
 
@@ -211,7 +214,7 @@ public class OrderBookGetter {
         return exmoResponse;
     }
     //Convert Exmo response into CompiledOrderBook.
-    private CompiledOrderBook getExmoCleanOrderBook(int limit, String currencyPair) {
+    protected CompiledOrderBook getExmoCleanOrderBook(int limit, String currencyPair) {
 
         ExmoResponse response;
         response = getExmoResponseBTCUSTD(limit, currencyPair);
@@ -313,7 +316,7 @@ public class OrderBookGetter {
         return gdaxResponse;
     }
     //Convert Gdax response into CompiledOrderBook.
-    private CompiledOrderBook getGdaxTop50CleanOrderBook(int limit, String currencyPair) {
+    protected CompiledOrderBook getGdaxTop50CleanOrderBook(int limit, String currencyPair) {
 
         GdaxResponse responce;
         responce = getGdaxResponseTop50(currencyPair);
@@ -431,7 +434,7 @@ public class OrderBookGetter {
         return res;
     }*/
 
-    private void updateListener(boolean showProgress, int processedExchangeCount, int exchangeCount) {
+    protected void updateListener(boolean showProgress, int processedExchangeCount, int exchangeCount) {
         if (showProgress) {
             progressListener.onUpdateOrderBookGetterProgress(
                     Math.round(100 * processedExchangeCount / exchangeCount));
@@ -439,70 +442,7 @@ public class OrderBookGetter {
     }
 
     //Get Order books from all markets and unite them into one.
-    public CompiledOrderBook getCompiledOrderBook(SettingsContainer settings, boolean showProgress) {
-
-        boolean bitfinex = settings.getBitfinex();
-        boolean cex = settings.getCex();
-        boolean exmo = settings.getExmo();
-        boolean gdax = settings.getGdax();
-        int limit = settings.getDepthLimit();
-        String currencyPair = settings.getCurrencyPare();
-
-
-        int exchangeCount = 0;
-        if (bitfinex) exchangeCount++;
-        if (cex) exchangeCount++;
-        if (exmo) exchangeCount++;
-        if (gdax) exchangeCount++;
-
-        //To avoid NullPointerException
-        if (exchangeCount == 0) {
-            exchangeCount++;
-        }
-
-        int processedExchangeCount = 0;
-
-        CompiledOrderBook result = new CompiledOrderBook();
-
-        if (bitfinex) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            //Add all it's orders into the order book.
-            result.addAll(getBitfinexCleanOrderBook(limit, currencyPair));
-        }
-        if (cex) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            result.addAll(getCexPartCleanOrderBook(limit, currencyPair));
-        }
-        if (exmo) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            result.addAll(getExmoCleanOrderBook(limit, currencyPair));
-        }
-        if (gdax) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            result.addAll(getGdaxTop50CleanOrderBook(limit, currencyPair));
-        }
-        /*if (sp.getBoolean("kucoin", true)) {
-            result.addAll(getKucoinCleanOrderBook(limit, currencyPair));
-        }*/
-        //Sort the order book.
-        //Bids sorted in descending order by price.
-        //Asks sorted in ascending order by price.
-        //result.applyCommissions();
-        result.sort();
-
-        if (showProgress) {
-            progressListener.onUpdateOrderBookGetterProgress(0);
-        }
-
-        /* Gson gson = new Gson();
-        largeLog(LOGTAG, gson.toJson(result)); */
-
-        return result;
-    }
+    public abstract CompiledOrderBook getCompiledOrderBook(SettingsContainer settings, boolean showProgress);
 
     /*public static void largeLog(String tag, String content) {
         if (content.length() > 4000) {

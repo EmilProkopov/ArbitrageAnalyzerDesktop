@@ -118,7 +118,7 @@ public class MarketInfoGetter {
             res = responseCall.execute();
             response = res.body();
         } catch (Exception e) {
-            Log.e(LOGTAG, "EXMO problem");
+            // Log.e(LOGTAG, "EXMO problem");
         }
 
         if (response != null) {
@@ -163,7 +163,7 @@ public class MarketInfoGetter {
             res = responseCall.execute();
             response = res.body();
         } catch (Exception e) {
-            Log.e(LOGTAG, "GDAX problem");
+            // Log.e(LOGTAG, "GDAX problem");
         }
 
         if (response != null) {

@@ -13,7 +13,6 @@ public class ModelImpl implements ArbitrageModel {
 
     ModelImpl(ArbitragePresenter presenter) {
         this.presenter = presenter;
-        presenter.onWorkerResult(new OutputDataSet());
     }
 
     @Override

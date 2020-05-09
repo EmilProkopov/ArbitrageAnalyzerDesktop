@@ -3,10 +3,11 @@ package com.course_project.arbitrage_analyzer.desktop;
 import com.course_project.arbitrage_analyzer.interfaces.ArbitrageModel;
 import com.course_project.arbitrage_analyzer.interfaces.ArbitragePresenter;
 import com.course_project.arbitrage_analyzer.interfaces.ArbitrageView;
+import com.course_project.arbitrage_analyzer.model.order_book_getters.OrderBookGetter;
 import com.course_project.arbitrage_analyzer.model.OutputDataSet;
 import com.course_project.arbitrage_analyzer.model.SettingsContainer;
 
-public class PresenterImpl implements ArbitragePresenter {
+public class PresenterImpl implements ArbitragePresenter, OrderBookGetter.OrderBookGetterProgressListener {
 
     private ArbitrageView view;
     private ArbitrageModel model;
@@ -22,6 +23,11 @@ public class PresenterImpl implements ArbitragePresenter {
         model.onDestroy();
         model = null;
         view = null;
+    }
+
+    @Override
+    public void onUpdateOrderBookGetterProgress(Integer progress) {
+        view.updateProgressBar(progress);
     }
 
     @Override

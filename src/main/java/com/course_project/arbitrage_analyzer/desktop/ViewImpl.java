@@ -78,7 +78,7 @@ public class ViewImpl implements ArbitrageView {
     public void updateResumePauseView(boolean paused) {}
 
     @Override
-    public void showToast(String msg) {}
+    public void showToast(String msg) { System.out.print(msg+"\n");}
 
 
     private void write(String s) {
