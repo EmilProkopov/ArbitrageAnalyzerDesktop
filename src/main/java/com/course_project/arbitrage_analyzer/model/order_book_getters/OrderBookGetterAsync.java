@@ -1,9 +1,19 @@
 package com.course_project.arbitrage_analyzer.model.order_book_getters;
 
+import com.course_project.arbitrage_analyzer.Log;
 import com.course_project.arbitrage_analyzer.model.CompiledOrderBook;
+import com.course_project.arbitrage_analyzer.model.MarketName;
 import com.course_project.arbitrage_analyzer.model.SettingsContainer;
 
+import java.util.concurrent.TimeUnit;
+
 public class OrderBookGetterAsync extends OrderBookGetter {
+
+    private final static String logtag = "OBGetterAsync";
+    private int exchangeCount, processedExchangeCount;
+    private boolean showProgress;
+    SingleMarketOBGetter bitfinexGetter, cexGetter, exmoGetter, gdaxGetter;
+    CompiledOrderBook resultOB;
 
     public OrderBookGetterAsync(OrderBookGetter.OrderBookGetterProgressListener listener) {
         super(listener);
@@ -12,6 +22,7 @@ public class OrderBookGetterAsync extends OrderBookGetter {
     @Override
     public CompiledOrderBook getCompiledOrderBook(SettingsContainer settings, boolean showProgress) {
 
+        this.showProgress = showProgress;
         boolean bitfinex = settings.getBitfinex();
         boolean cex = settings.getCex();
         boolean exmo = settings.getExmo();
@@ -20,7 +31,7 @@ public class OrderBookGetterAsync extends OrderBookGetter {
         String currencyPair = settings.getCurrencyPare();
 
 
-        int exchangeCount = 0;
+        exchangeCount = 0;
         if (bitfinex) exchangeCount++;
         if (cex) exchangeCount++;
         if (exmo) exchangeCount++;
@@ -30,38 +41,61 @@ public class OrderBookGetterAsync extends OrderBookGetter {
             return new CompiledOrderBook();
         }
 
-        int processedExchangeCount = 0;
+        processedExchangeCount = 0;
 
-        CompiledOrderBook result = new CompiledOrderBook();
+        resultOB = new CompiledOrderBook();
 
         if (bitfinex) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            //Add all it's orders into the order book.
-            result.addAll(getBitfinexCleanOrderBook(limit, currencyPair));
+            bitfinexGetter = new SingleMarketOBGetter(this, MarketName.Bitfinex, limit, currencyPair);
+            bitfinexGetter.start();
         }
         if (cex) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            result.addAll(getCexPartCleanOrderBook(limit, currencyPair));
+            cexGetter = new SingleMarketOBGetter(this, MarketName.Cex, limit, currencyPair);
+            cexGetter.start();
         }
         if (exmo) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            result.addAll(getExmoCleanOrderBook(limit, currencyPair));
+            exmoGetter = new SingleMarketOBGetter(this, MarketName.Exmo, limit, currencyPair);
+            exmoGetter.start();
         }
         if (gdax) {
-            processedExchangeCount++;
-            updateListener(showProgress, processedExchangeCount, exchangeCount);
-            result.addAll(getGdaxTop50CleanOrderBook(limit, currencyPair));
+            gdaxGetter = new SingleMarketOBGetter(this, MarketName.Gdax, limit, currencyPair);
+            gdaxGetter.start();
         }
 
-        result.sort();
+        while (processedExchangeCount < exchangeCount) {
+            Log.e(logtag, "WAITING");
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        resultOB.sort();
 
         if (showProgress) {
             progressListener.onUpdateOrderBookGetterProgress(0);
         }
 
-        return result;
+        Log.e(logtag, "GOT ALL");
+
+        return resultOB;
+    }
+
+    synchronized public void onMarketOBGet(CompiledOrderBook ob, MarketName mn) {
+        resultOB.addAll(ob);
+        processedExchangeCount++;
+        updateListener(showProgress, processedExchangeCount, exchangeCount);
+
+        if (mn == MarketName.Bitfinex) {
+            bitfinexGetter = null;
+        } else if (mn == MarketName.Cex) {
+            cexGetter = null;
+        } else if (mn == MarketName.Exmo) {
+            exmoGetter = null;
+        } else {
+            gdaxGetter = null;
+        }
+        Log.e(logtag, "Finish "+mn.toString());
     }
 }

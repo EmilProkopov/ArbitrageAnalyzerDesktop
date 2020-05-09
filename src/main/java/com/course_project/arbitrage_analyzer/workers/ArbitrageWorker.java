@@ -16,6 +16,7 @@ import com.course_project.arbitrage_analyzer.model.disbalance_minimization.minim
 import com.course_project.arbitrage_analyzer.model.disbalance_minimization.minimizers.table_minimizers.ExpectedRegretMinimizer;
 import com.course_project.arbitrage_analyzer.model.disbalance_minimization.minimizers.target_functions.SurfaceTargetFunction;
 import com.course_project.arbitrage_analyzer.model.order_book_getters.OrderBookGetter;
+import com.course_project.arbitrage_analyzer.model.order_book_getters.OrderBookGetterAsync;
 import com.course_project.arbitrage_analyzer.model.order_book_getters.OrderBookGetterSync;
 
 import java.util.ArrayList;
@@ -37,14 +38,14 @@ public class ArbitrageWorker extends Thread {
 
     private boolean firstLoop = true;
     private long lastTRPSUpdateTime;
-    private long trpsUpdatePeriod = 1800000;
+    private final long trpsUpdatePeriod = 1800000;
 
 
     public ArbitrageWorker(ArbitragePresenter presenter) {
         Log.e(logTag, "WORKER CREATED");
         this.presenter = presenter;
         settings = new SettingsContainer();
-        orderBookGetter = new OrderBookGetterSync((OrderBookGetter.OrderBookGetterProgressListener) presenter);
+        orderBookGetter = new OrderBookGetterAsync((OrderBookGetter.OrderBookGetterProgressListener) presenter);
         infoGetter = new MarketInfoGetter();
         estimator = new DisbalanceEstimator();
         initializeMinimizer();
@@ -144,8 +145,8 @@ public class ArbitrageWorker extends Thread {
         double realV = estimate.getUsedSecondCurrencyAmount();
 
         double profit = 0.0; //Profit that we can get.
-        Double firstCurrencyAmount = 0.0;
-        Double secondCurrencyAmount = 0.0;
+        double firstCurrencyAmount = 0.0;
+        double secondCurrencyAmount = 0.0;
         //Points of the plot.
         ArrayList<Double> profitPoints = new ArrayList<>();
         ArrayList<Double> amountPoints = new ArrayList<>();
@@ -209,7 +210,7 @@ public class ArbitrageWorker extends Thread {
                         - orderBook.getAsks().get(ax).getPrice()) * deltaFirst;
             }
 
-            Double currentProfit = (orderBook.getBids().get(bx).getPrice()
+            double currentProfit = (orderBook.getBids().get(bx).getPrice()
                     - orderBook.getAsks().get(ax).getPrice()) * m;
 
             profit += currentProfit;
