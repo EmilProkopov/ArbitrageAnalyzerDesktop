@@ -1,9 +1,12 @@
+import com.course_project.arbitrage_analyzer.desktop.ViewImpl;
+import com.course_project.arbitrage_analyzer.interfaces.ArbitrageView;
+
 public class Main {
 
     public static void main(String[] args) {
-        System.out.print("aaa\n");
-        for(int i=0; i<args.length; ++i) {
-            System.out.print(args[i]+'\n');
-        }
+        ////////////////////////////////////////////////////////////
+        args = new String[]{"/home/emmanuil/Documents/diplom/resLogs/resLog1.csv", "60", "BTC/UST", "50", "true", "true", "true", "true", "20", "0.5", "5", "1000000", "Simple"};
+        ///////////////////////////////////////////////////////////
+        ArbitrageView view = new ViewImpl(args);
     }
 }
