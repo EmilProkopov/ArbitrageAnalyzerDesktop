@@ -11,6 +11,7 @@ public class OrderBookGetterAsync extends OrderBookGetter {
 
     private final static String logtag = "OBGetterAsync";
     private int exchangeCount, processedExchangeCount;
+    private final long maxWaitTimeMS = 60000;
     private boolean showProgress;
     SingleMarketOBGetter bitfinexGetter, cexGetter, exmoGetter, gdaxGetter;
     CompiledOrderBook resultOB;
@@ -62,7 +63,9 @@ public class OrderBookGetterAsync extends OrderBookGetter {
             gdaxGetter.start();
         }
 
-        while (processedExchangeCount < exchangeCount) {
+        long startTime = System.currentTimeMillis();
+
+        while ((processedExchangeCount < exchangeCount) && (System.currentTimeMillis()-startTime < maxWaitTimeMS)) {
             Log.e(logtag, "WAITING");
             try {
                 TimeUnit.MILLISECONDS.sleep(100);

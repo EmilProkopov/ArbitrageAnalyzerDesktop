@@ -5,7 +5,7 @@ public class Main {
 
     public static void main(String[] args) {
         ////////////////////////////////////////////////////////////
-        args = new String[]{"/home/emmanuil/Documents/diplom/resLogs/resLog1.csv", "5", "BTC/USD", "50", "true", "true", "true", "true", "20", "0.5", "5", "1000000", "Simple"};
+        // args = new String[]{"D:\\resLogs\\resLog1_1.csv", "10", "BTC/USD", "10", "true", "true", "true", "true", "3", "0.5", "-1", "-1", "BayesLaplace"};
         ///////////////////////////////////////////////////////////
         ArbitrageView view = new ViewImpl(args);
     }

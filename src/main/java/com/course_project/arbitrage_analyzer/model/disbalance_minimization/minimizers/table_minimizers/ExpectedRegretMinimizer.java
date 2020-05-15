@@ -65,6 +65,9 @@ public class ExpectedRegretMinimizer extends TableMinimizer {
             estimates.add(tmp);
         }
 
+        if (table.size() == 0) {
+            return 0;
+        }
         Double min = Collections.min(estimates);
         int index = estimates.indexOf(min);
         return possiblePoints.get(index);

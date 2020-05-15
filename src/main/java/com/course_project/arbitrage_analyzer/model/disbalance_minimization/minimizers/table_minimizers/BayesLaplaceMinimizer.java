@@ -29,6 +29,9 @@ public class BayesLaplaceMinimizer extends TableMinimizer {
             estimates.add(tmp);
         }
 
+        if (table.size() == 0) {
+            return 0;
+        }
         Double max = Collections.max(estimates);
         int index = estimates.indexOf(max);
         return possiblePoints.get(index);

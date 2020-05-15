@@ -63,7 +63,7 @@ public class ViewImpl implements ArbitrageView {
         s.append(dataSet.getEstimate().getUsedSecondCurrencyAmount()).append(",");
         s.append(dataSet.getRealFirstCurrencyAmount()).append(",");
         s.append(dataSet.getRealProfit()).append(",");
-        s.append(dataSet.getEstimate().getFirstCurrencyDisbalance()).append(",");
+        s.append(dataSet.getEstimate().getFirstCurrencyDisbalance());
         s.append('\n');
         write(s.toString());
 
